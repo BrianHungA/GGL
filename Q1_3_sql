@@ -1,0 +1,30 @@
+SET @cdays = 30;
+SELECT @cdays,COUNT(*) cnt,COUNT(*)/99999
+FROM (
+		SELECT DISTINCT(idx_tb.id),COUNT(*) AS cnt
+		FROM (
+				SELECT oc.id,oc.ots AS st,oc2.ots AS ed
+				FROM (
+						SELECT c.id,CAST(c.ts AS DATE) AS ots
+						FROM customer_report_time as c
+						inner join (select ic.id,COUNT(*) as cnt from customer_report_time as ic group by ic.id having cnt >= @cdays) as oc ON c.id = oc.id
+						GROUP BY c.id,CAST(c.ts AS DATE)
+						) AS oc
+				INNER JOIN (
+							SELECT c.id,CAST(c.ts AS DATE) AS ots
+							FROM customer_report_time as c
+							inner join (select ic.id,COUNT(*) as cnt from cusIndexestomer_report_time as ic group by ic.id having cnt >= @cdays) as oc ON c.id = oc.id
+							GROUP BY c.id,CAST(c.ts AS DATE)
+							) AS oc2 ON oc.id = oc2.id
+				WHERE oc.ots < oc2.ots
+				AND oc.ots + @cdays - 1 = oc2.ots
+				) AS idx_tb
+		INNER JOIN (SELECT c.id,CAST(c.ts AS DATE) AS ots
+					FROM customer_report_time as c
+					inner join (select ic.id,COUNT(*) as cnt from customer_report_time as ic group by ic.id having cnt >= @cdays) as oc ON c.id = oc.id
+					GROUP BY c.id,CAST(c.ts AS DATE)
+					) AS oc3 ON idx_tb.id = oc3.id AND oc3.ots BETWEEN idx_tb.st AND idx_tb.ed
+		GROUP BY idx_tb.id,idx_tb.st
+		HAVING cnt >= @cdays
+		) AS rel
+GROUP BY rel.id

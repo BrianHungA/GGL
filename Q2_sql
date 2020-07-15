@@ -1,0 +1,22 @@
+# 1
+SELECT pr.*,rel.* 
+FROM (SELECT pr.`No`,
+     (SELECT AVG(ipr.`pm2.5`) AS `std` FROM pm25_record ipr WHERE ipr.`No` BETWEEN pr.`No`-3 and pr.`No` -1 ) AS `avg`,
+     (SELECT STD(ipr.`pm2.5`) AS `std` FROM pm25_record ipr WHERE ipr.`No` BETWEEN pr.`No`-3 and pr.`No` -1 ) AS `std`
+     FROM pm25_record pr 
+     ) AS rel
+INNER JOIN pm25_record AS pr ON pr.`No` = rel.`No`
+WHERE pr.`pm2.5` - rel.`avg` > (3*rel.`std`)
+ORDER BY pr.`year`,pr.`month` ,pr.`day` ,pr.`hour` 
+
+# 2
+SELECT pr.*,rel.* 
+FROM (SELECT pr.`No`,
+     (SELECT AVG(ipr.`pm2.5`) AS `std` FROM pm25_record ipr WHERE ipr.`No` BETWEEN pr.`No`-3 and pr.`No` -1 ) AS `avg`,
+     (SELECT STD(ipr.`pm2.5`) AS `std` FROM pm25_record ipr WHERE ipr.`No` BETWEEN pr.`No`-3 and pr.`No` -1 ) AS `std`
+     FROM pm25_record pr 
+     ) AS rel
+INNER JOIN pm25_record AS pr ON pr.`No` = rel.`No`
+WHERE pr.`pm2.5` - rel.`avg` > (3*rel.`std`)
+ORDER BY pr.`year`,pr.`month` ,pr.`day` ,pr.`hour` 
+LIMIT 10,20
